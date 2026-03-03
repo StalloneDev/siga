@@ -1,0 +1,337 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model CompagnieAerienne {
+  id       Int            @id @default(autoincrement())
+  nom      String
+  codeIata String         @unique @map("code_iata")
+  codeIcao String         @map("code_icao")
+  pays     String
+  actif    Boolean        @default(true)
+  avions       Avion[]
+  vols         ProgrammeVol[]
+  commentaires CommentaireComparaison[]
+
+  @@map("compagnie_aerienne")
+}
+
+model Aeroport {
+  id          Int            @id @default(autoincrement())
+  nom         String
+  ville       String
+  pays        String
+  codeIata    String         @unique @map("code_iata")
+  codeIcao    String         @map("code_icao")
+  actif       Boolean        @default(true)
+  volsArrivee ProgrammeVol[] @relation("Arrivee")
+  volsDepart  ProgrammeVol[] @relation("Depart")
+
+  @@map("aeroport")
+}
+
+model TypeAvion {
+  id                Int     @id @default(autoincrement())
+  constructeur      String
+  modele            String
+  codeIata          String  @map("code_iata")
+  codeIcao          String  @map("code_icao")
+  capaciteReservoir Int     @map("capacite_reservoir")
+  avions            Avion[]
+
+  @@map("type_avion")
+}
+
+model Avion {
+  id              Int               @id @default(autoincrement())
+  immatriculation String            @unique
+  typeAvionId     Int               @map("type_avion_id")
+  compagnieId     Int               @map("compagnie_id")
+  actif           Boolean           @default(true)
+  compagnie       CompagnieAerienne @relation(fields: [compagnieId], references: [id])
+  typeAvion       TypeAvion         @relation(fields: [typeAvionId], references: [id])
+  vols            ProgrammeVol[]
+
+  @@map("avion")
+}
+
+model EquipementStockage {
+  id               Int                      @id @default(autoincrement())
+  nom              String
+  typeEquipement   EquipementType           @map("type_equipement")
+  capaciteMaximale Int                      @map("capacite_maximale")
+  stockInitial     Int                      @map("stock_initial")
+  seuilAlerte      Int                      @default(0) @map("seuil_alerte")
+  actif            Boolean                  @default(true)
+  
+  // Maintenance fields
+  dateDerniereMaintenance DateTime? @map("date_derniere_maintenance")
+  dateProchaineMaintenance DateTime? @map("date_prochaine_maintenance")
+  journalMaintenance      JournalMaintenance[]
+
+  avitaillements   Avitaillement[]
+  jaugeages        Jaugeage[]
+  mouvements       MouvementStock[]
+  rapports         RapportStockJournalier[]
+  receptions       ReceptionCarburant[]
+  notifications    NotificationSysteme[]
+  transfertsDest   TransfertCarburant[]     @relation("Destination")
+  transfertsSource TransfertCarburant[]     @relation("Source")
+
+  @@map("equipement_stockage")
+}
+
+model JournalMaintenance {
+  id           Int                @id @default(autoincrement())
+  equipementId Int                @map("equipement_id")
+  date         DateTime
+  type         String             // REVISION, NETTOYAGE, REPARATION, AUTRE
+  description  String?            @db.Text
+  intervenant  String?
+  cout         Decimal?           @db.Decimal(10, 2)
+  equipement   EquipementStockage @relation(fields: [equipementId], references: [id])
+
+  @@map("journal_maintenance")
+}
+
+// ... existing models ...
+
+model Utilisateur {
+  id        Int               @id @default(autoincrement())
+  nom       String
+  prenom    String
+  email     String?           @unique
+  password  String            // Haché avec bcrypt
+  profil    ProfilUtilisateur
+  actif     Boolean           @default(true)
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  // Relations pour le traçage
+  avitaillements Avitaillement[]
+  transferts     TransfertCarburant[]
+  jaugeages      Jaugeage[]
+
+  @@map("utilisateur")
+}
+
+model NotificationSysteme {
+  id           Int                @id @default(autoincrement())
+  message      String
+  type         String             @default("warning") // warning, critical, info
+  isRead       Boolean            @default(false) @map("is_read")
+  equipementId Int?               @map("equipement_id")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  equipement   EquipementStockage? @relation(fields: [equipementId], references: [id])
+
+  @@map("notification_systeme")
+}
+
+model ProgrammeVol {
+  id                 Int                     @id @default(autoincrement())
+  numeroVol          String                  @map("numero_vol")
+  compagnieId        Int                     @map("compagnie_id")
+  avionId            Int                     @map("avion_id")
+  aeroportArriveeId  Int                     @map("aeroport_arrivee_id")
+  aeroportDepartId   Int                     @map("aeroport_depart_id")
+  dateProgrammee     DateTime                @map("date_programmee") @db.Date
+  heureArriveePrevue DateTime                @map("heure_arrivee_prevue")
+  heureDepartPrevue  DateTime                @map("heure_depart_prevue")
+  statut             VolStatut               @default(PREVU)
+  quantitePrevue     Int                     @default(0) @map("quantite_prevue")
+  avitaillements     Avitaillement[]
+  performance        PerformanceJournaliere?
+  previsions         PrevisionVol[]
+  aeroportArrivee    Aeroport                @relation("Arrivee", fields: [aeroportArriveeId], references: [id])
+  aeroportDepart     Aeroport                @relation("Depart", fields: [aeroportDepartId], references: [id])
+  avion              Avion                   @relation(fields: [avionId], references: [id])
+  compagnie          CompagnieAerienne       @relation(fields: [compagnieId], references: [id])
+
+  @@map("programme_vol")
+}
+
+model ReceptionCarburant {
+  id                      Int                @id @default(autoincrement())
+  fournisseur             String
+  depotChargement         String?            @map("depot_chargement")
+  referenceBonLivraison   String             @unique @map("reference_bon_livraison")
+  quantiteRecue           Int                @map("quantite_recue")
+  densite                 Decimal
+  temperature             Decimal
+  equipementDestinationId Int                @map("equipement_destination_id")
+  dateReception           DateTime           @map("date_reception")
+  documentJustificatif    String?            @map("document_justificatif")
+  equipementDestination   EquipementStockage @relation(fields: [equipementDestinationId], references: [id])
+
+  @@map("reception_carburant")
+}
+
+model TransfertCarburant {
+  id                      Int                @id @default(autoincrement())
+  equipementSourceId      Int                @map("equipement_source_id")
+  equipementDestinationId Int                @map("equipement_destination_id")
+  quantiteTransferee      Int                @map("quantite_transferee")
+  referenceTransfert      String             @map("reference_transfert")
+  operateurId             Int?               @map("operateur_id")
+  dateTransfert           DateTime           @map("date_transfert")
+  equipementDestination   EquipementStockage @relation("Destination", fields: [equipementDestinationId], references: [id])
+  equipementSource        EquipementStockage @relation("Source", fields: [equipementSourceId], references: [id])
+  operateur               Utilisateur?       @relation(fields: [operateurId], references: [id])
+
+  @@map("transfert_carburant")
+}
+
+model Avitaillement {
+  id                 Int                @id @default(autoincrement())
+  programmeVolId     Int                @map("programme_vol_id")
+  camionId           Int                @map("camion_id")
+  quantiteLivree     Int                @map("quantite_livree")
+  compteurAvant      BigInt             @map("compteur_avant")
+  compteurApres      BigInt             @map("compteur_apres")
+  numeroBonLivraison String             @unique @map("numero_bon_livraison")
+  operateurId        Int?               @map("operateur_id")
+  dateOperation      DateTime           @default(now()) @map("date_operation")
+  camion             EquipementStockage @relation(fields: [camionId], references: [id])
+  programmeVol       ProgrammeVol       @relation(fields: [programmeVolId], references: [id])
+  operateur          Utilisateur?       @relation(fields: [operateurId], references: [id])
+
+  @@map("avitaillement")
+}
+
+model MouvementStock {
+  id            Int                @id @default(autoincrement())
+  equipementId  Int                @map("equipement_id")
+  typeMouvement MouvementType      @map("type_mouvement")
+  quantite      Int
+  referenceType ReferenceType      @map("reference_type")
+  referenceId   Int                @map("reference_id")
+  dateMouvement DateTime           @map("date_mouvement")
+  equipement    EquipementStockage @relation(fields: [equipementId], references: [id])
+
+  @@map("mouvement_stock")
+}
+
+model Jaugeage {
+  id             Int                @id @default(autoincrement())
+  equipementId   Int                @map("equipement_id")
+  dateJaugeage   DateTime           @map("date_jaugeage") @db.Date
+  valeurDipMm    Decimal            @map("valeur_dip_mm")
+  temperature    Decimal
+  volumeMesure   Int                @map("volume_mesure")
+  stockTheorique Int                @map("stock_theorique")
+  ecart          Int
+  controleurId   Int?               @map("controleur_id")
+  equipement     EquipementStockage @relation(fields: [equipementId], references: [id])
+  controleur     Utilisateur?       @relation(fields: [controleurId], references: [id])
+
+  @@map("jaugeage")
+}
+
+model RapportStockJournalier {
+  id             Int                @id @default(autoincrement())
+  dateRapport    DateTime           @map("date_rapport") @db.Date
+  equipementId   Int                @map("equipement_id")
+  stockOuverture Int                @map("stock_ouverture")
+  stockEntree    Int                @map("stock_entree")
+  stockSortie    Int                @map("stock_sortie")
+  stockTheorique Int                @map("stock_theorique")
+  volumeMesure   Int                @map("volume_mesure")
+  ecart          Int
+  equipement     EquipementStockage @relation(fields: [equipementId], references: [id])
+
+  @@map("rapport_stock_journalier")
+}
+
+model ProgCarburantJournalier {
+  id                  Int            @id @default(autoincrement())
+  date                DateTime       @db.Date
+  stockTotalOuverture Int            @map("stock_total_ouverture")
+  stockSecurite       Int            @map("stock_securite")
+  stockDisponible     Int            @map("stock_disponible")
+  previsions          PrevisionVol[]
+
+  @@map("prog_carburant_journalier")
+}
+
+model PrevisionVol {
+  id                    Int                     @id @default(autoincrement())
+  programmeJournalierId Int                     @map("programme_journalier_id")
+  programmeVolId        Int                     @map("programme_vol_id")
+  quantitePrevue        Int                     @map("quantite_prevue")
+  programmeJournalier   ProgCarburantJournalier @relation(fields: [programmeJournalierId], references: [id])
+  programmeVol          ProgrammeVol            @relation(fields: [programmeVolId], references: [id])
+
+  @@map("prevision_vol")
+}
+
+model PerformanceJournaliere {
+  id               Int          @id @default(autoincrement())
+  programmeVolId   Int          @unique @map("programme_vol_id")
+  quantitePrevue   Int          @map("quantite_prevue")
+  quantiteReelle   Int          @map("quantite_reelle")
+  ecart            Int
+  pourcentageEcart Decimal      @map("pourcentage_ecart")
+  programmeVol     ProgrammeVol @relation(fields: [programmeVolId], references: [id])
+
+  @@map("performance_journaliere")
+}
+
+model CommentaireComparaison {
+  id          Int               @id @default(autoincrement())
+  date        DateTime          @db.Date
+  compagnieId Int               @map("compagnie_id")
+  commentaire String            @db.Text
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  compagnie   CompagnieAerienne @relation(fields: [compagnieId], references: [id])
+
+  @@unique([date, compagnieId])
+  @@map("commentaire_comparaison")
+}
+
+model ParametreSysteme {
+  id        Int      @id @default(autoincrement())
+  cle       String   @unique
+  valeur    String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("parametre_systeme")
+}
+
+enum ProfilUtilisateur {
+  AVITAILLEUR
+  SUPERVISEUR
+  DIRECTEUR
+  ADMINISTRATEUR
+}
+
+enum EquipementType {
+  BAC
+  CAMION
+}
+
+enum VolStatut {
+  PREVU
+  ARRIVE
+  PARTI
+  ANNULE
+}
+
+enum MouvementType {
+  RECEPTION
+  TRANSFERT_ENTREE
+  TRANSFERT_SORTIE
+  AVITAILLEMENT
+  AJUSTEMENT
+}
+
+enum ReferenceType {
+  RECEPTION
+  TRANSFERT
+  AVITAILLEMENT
+  AJUSTEMENT
+}

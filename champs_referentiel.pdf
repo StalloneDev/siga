@@ -1,0 +1,69 @@
+# Champs de Renseignement du Référentiel SIGA
+
+Ce document récapitule les champs nécessaires pour renseigner les données de base dans les différents modules du Référentiel.
+
+---
+
+### 1. Aéroports
+*Utilisé pour définir les destinations et provenances des vols.*
+
+| Champ | Description | Exemple |
+| :--- | :--- | :--- |
+| **Nom** | Nom complet de l'aéroport | Douala International |
+| **Ville** | Ville où se situe l'aéroport | Douala |
+| **Pays** | Pays de l'aéroport | Cameroun |
+| **Code IATA** | Code de 3 lettres | DLA |
+| **Code ICAO** | Code de 4 lettres | FKKD |
+| **Statut** | Activé ou Désactivé | Actif |
+
+---
+
+### 2. Compagnies Aériennes
+*Utilisé pour lier les vols et l'avitaillement aux clients.*
+
+| Champ | Description | Exemple |
+| :--- | :--- | :--- |
+| **Nom** | Nom commercial de la compagnie | Camair-Co |
+| **Code IATA** | Code de 2 lettres | QC |
+| **Code ICAO** | Code de 3 lettres | CRC |
+| **Pays** | Siège social de la compagnie | Cameroun |
+| **Statut** | Activé ou Désactivé | Actif |
+
+---
+
+### 3. Types d'Avions
+*Utilisé pour définir les caractéristiques techniques des aéronefs.*
+
+| Champ | Description | Exemple |
+| :--- | :--- | :--- |
+| **Constructeur** | Fabricant de l'avion | Airbus |
+| **Modèle** | Modèle précis | A320-200 |
+| **Code IATA** | Code type IATA | 320 |
+| **Code ICAO** | Code type ICAO | A320 |
+| **Capacité Réservoir** | Capacité maximale en litres | 24000 |
+
+---
+
+### 4. Avions (Flotte)
+*Enregistrement des appareils spécifiques liés à une compagnie.*
+
+| Champ | Description | Exemple |
+| :--- | :--- | :--- |
+| **Immatriculation** | Identifiant unique de l'appareil | TJ-AAA |
+| **Type d'avion** | Sélection dans la liste des modèles | Airbus A320 |
+| **Compagnie** | Sélection de la compagnie propriétaire | Camair-Co |
+| **Statut** | Activé ou Désactivé | Actif |
+
+---
+
+### 5. Équipements (Stockage & Livraison)
+*Utilisé pour enregistrer les Cuves (Bacs) et les Camions.*
+
+| Champ | Description | Exemple |
+| :--- | :--- | :--- |
+| **Nom** | Identifiant de l'équipement | CUVE N°1 / CAMION 04 |
+| **Type** | Catégorie de l'équipement | BAC ou CAMION |
+| **Capacité Maximale** | Volume total de l'équipement (L) | 50000 |
+| **Stock Initial** | Volume présent à l'ouverture (L) | 12000 |
+| **Seuil d'Alerte** | Niveau critique de stock (L) | 5000 |
+| **Statut** | Activé ou Désactivé | Actif |

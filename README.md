@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SIGA — Système Intégré de Gestion d’Avitaillement
 
-## Getting Started
+Bienvenue dans l'application SIGA. Pour garantir l'intégrité des calculs de stocks et la cohérence des rapports, il est crucial de suivre un ordre précis pour le premier paramétrage et l'utilisation quotidienne.
 
-First, run the development server:
+## 🚀 Ordre de Saisie des Données (Workflow)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Pour qu'un rapport de vente soit complet, les données doivent être renseignées dans l'ordre suivant :
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 1. Le Référentiel (Configuration Initiale)
+Avant toute opération, configurez les bases de données "maîtres" sous le menu **Référentiel** :
+1.  **Aéroports** : Enregistrez les codes IATA/ICAO des destinations.
+2.  **Compagnies** : Ajoutez les compagnies aériennes clientes.
+3.  **Types d'Avions** : Définissez les constructeurs, modèles et capacités de réservoirs.
+4.  **Avions** : Enregistrez les immatriculations en les liant à une compagnie et un type d'avion.
+5.  **Équipements** : Enregistrez vos **Cuves** et vos **Camions**. 
+    > [!IMPORTANT]  
+    > Renseignez bien le **Stock Initial** pour chaque équipement lors de la création. C'est ce chiffre qui servira de base pour le premier compteur.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. Logistique (Gestion des Stocks)
+Une fois le référentiel prêt :
+1.  **Réceptions** : Enregistrez les livraisons de carburant reçues des fournisseurs (remplit vos cuves).
+2.  **Transferts** : Enregistrez les transferts de carburant des **Cuves** vers les **Camions**. 
+    *   Cela met à jour la quantité disponible dans le camion pour les futures ventes.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Exploitation (Opérations de Piste)
+C'est le cœur de l'activité quotidienne :
+1.  **Programme de Vol** : Saisissez les vols prévus pour la journée.
+    *   **Prévision (Nouveau)** : Renseignez le volume de carburant estimé nécessaire. Cette donnée alimente vos graphiques de performance.
+2.  **Avitaillement (Vente)** : Enregistrez l'opération réelle.
+    *   Sélectionnez le vol dans la liste.
+    *   Le système compare automatiquement la saisie réelle à votre prévision.
 
-## Learn More
+### 4. Rapports & Analytics
+*   **Rapport de Vente** : Consultez la vue consolidée et exportez en Excel pour la facturation.
+*   **Analyse & Performance** : Suivez les KPIs et l'évolution des stocks graphiquement.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Règles de Gestion à retenir
+*   **Compteurs** : Le compteur "Avant" d'une vente est TOUJOURS égal au compteur "Après" de la vente précédente du même camion. Aucun saut n'est autorisé.
+*   **Stocks** : Un avitaillement ne peut pas être validé si le camion n'a pas assez de carburant (vérifiez vos transferts).
+*   **Exports** : Tous les tableaux sont exportables en Excel via le bouton **Exporter**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 💻 Installation Technique (Développeurs)
+1. `npm install`
+2. Configurez le `DATABASE_URL` dans le fichier `.env`.
+3. `npx prisma db push`
+4. `npm run dev`
