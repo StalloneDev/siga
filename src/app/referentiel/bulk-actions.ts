@@ -6,11 +6,12 @@ import { revalidatePath } from "next/cache";
 // Compagnies Bulk
 export async function bulkImportCompagnies(data: any[]) {
     try {
-        await prisma.compagnie.createMany({
+        await prisma.compagnieAerienne.createMany({
             data: data.map(item => ({
                 nom: item.nom,
                 codeIata: item.codeIata,
                 codeIcao: item.codeIcao,
+                pays: item.pays || "Benin", // Default if missing, but should be in Excel
             })),
             skipDuplicates: true,
         });

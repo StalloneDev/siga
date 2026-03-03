@@ -53,7 +53,7 @@ export function CompagnieList({ initialData }: { initialData: Compagnie[] }) {
 
     const handleDownloadTemplate = () => {
         const templateData = [
-            { "nom": "Exemple Air", "codeIata": "EA", "codeIcao": "EXA" }
+            { "nom": "Exemple Air", "codeIata": "EA", "codeIcao": "EXA", "pays": "Benin" }
         ];
         const ws = XLSX.utils.json_to_sheet(templateData);
         const wb = XLSX.utils.book_new();
