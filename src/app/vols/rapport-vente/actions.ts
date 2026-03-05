@@ -9,7 +9,7 @@ export async function getSalesReportData() {
                 programmeVol: {
                     include: {
                         compagnie: true,
-                        avion: { include: { typeAvion: true } },
+                        typeAvion: true,
                         aeroportDepart: true,
                         aeroportArrivee: true
                     }

@@ -14,7 +14,6 @@ model CompagnieAerienne {
   codeIcao String         @map("code_icao")
   pays     String
   actif    Boolean        @default(true)
-  avions       Avion[]
   vols         ProgrammeVol[]
   commentaires CommentaireComparaison[]
 
@@ -42,23 +41,12 @@ model TypeAvion {
   codeIata          String  @map("code_iata")
   codeIcao          String  @map("code_icao")
   capaciteReservoir Int     @map("capacite_reservoir")
-  avions            Avion[]
+  vols              ProgrammeVol[]
+  avitaillements    Avitaillement[]
 
   @@map("type_avion")
 }
 
-model Avion {
-  id              Int               @id @default(autoincrement())
-  immatriculation String            @unique
-  typeAvionId     Int               @map("type_avion_id")
-  compagnieId     Int               @map("compagnie_id")
-  actif           Boolean           @default(true)
-  compagnie       CompagnieAerienne @relation(fields: [compagnieId], references: [id])
-  typeAvion       TypeAvion         @relation(fields: [typeAvionId], references: [id])
-  vols            ProgrammeVol[]
-
-  @@map("avion")
-}
 
 model EquipementStockage {
   id               Int                      @id @default(autoincrement())
@@ -136,7 +124,9 @@ model ProgrammeVol {
   id                 Int                     @id @default(autoincrement())
   numeroVol          String                  @map("numero_vol")
   compagnieId        Int                     @map("compagnie_id")
-  avionId            Int                     @map("avion_id")
+  immatriculation    String
+  typeAvionManual    String?                 @map("type_avion_manual")
+  typeAvionId        Int?                    @map("type_avion_id")
   aeroportArriveeId  Int                     @map("aeroport_arrivee_id")
   aeroportDepartId   Int                     @map("aeroport_depart_id")
   dateProgrammee     DateTime                @map("date_programmee") @db.Date
@@ -149,7 +139,7 @@ model ProgrammeVol {
   previsions         PrevisionVol[]
   aeroportArrivee    Aeroport                @relation("Arrivee", fields: [aeroportArriveeId], references: [id])
   aeroportDepart     Aeroport                @relation("Depart", fields: [aeroportDepartId], references: [id])
-  avion              Avion                   @relation(fields: [avionId], references: [id])
+  typeAvion          TypeAvion?              @relation(fields: [typeAvionId], references: [id])
   compagnie          CompagnieAerienne       @relation(fields: [compagnieId], references: [id])
 
   @@map("programme_vol")
@@ -196,8 +186,18 @@ model Avitaillement {
   numeroBonLivraison String             @unique @map("numero_bon_livraison")
   operateurId        Int?               @map("operateur_id")
   dateOperation      DateTime           @default(now()) @map("date_operation")
+  
+  // Fields for manual input/persistence
+  immatriculation    String?
+  typeAvionManual    String?            @map("type_avion_manual")
+  typeAvionId        Int?               @map("type_avion_id")
+  routeFrom          String?            @map("route_from")
+  routeTo            String?            @map("route_to")
+  suppliedTo         String?            @map("supplied_to")
+
   camion             EquipementStockage @relation(fields: [camionId], references: [id])
   programmeVol       ProgrammeVol       @relation(fields: [programmeVolId], references: [id])
+  typeAvion          TypeAvion?         @relation(fields: [typeAvionId], references: [id])
   operateur          Utilisateur?       @relation(fields: [operateurId], references: [id])
 
   @@map("avitaillement")

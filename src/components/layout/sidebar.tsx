@@ -67,7 +67,6 @@ const menuItems = [
         sub: [
             { name: "Compagnies", href: "/referentiel/compagnies" },
             { name: "Aéroports", href: "/referentiel/aeroports" },
-            { name: "Avions", href: "/referentiel/avions" },
             { name: "Équipements", href: "/referentiel/equipements" },
             { name: "Maintenance", href: "/referentiel/equipements/maintenance" },
         ]

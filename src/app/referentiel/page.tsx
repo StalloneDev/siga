@@ -24,13 +24,6 @@ const sections = [
         desc: "Référentiel des points d'origine et de destination des vols."
     },
     {
-        name: "Avions",
-        href: "/referentiel/avions",
-        icon: Plane,
-        count: "Flotte active",
-        desc: "Gestion des immatriculations et types d'appareils par compagnie."
-    },
-    {
         name: "Équipements",
         href: "/referentiel/equipements",
         icon: Truck,

@@ -10,10 +10,17 @@ interface BonLivraisonProps {
         compteurAvant: bigint | number;
         compteurApres: bigint | number;
         dateOperation: Date | string;
+        immatriculation?: string;
+        typeAvionManual?: string;
+        typeAvion?: { modele: string };
+        routeFrom?: string;
+        routeTo?: string;
+        suppliedTo?: string;
         programmeVol: {
             numeroVol: string;
             compagnie: { nom: string };
-            avion: { immatriculation: string; typeAvion: { modele: string } };
+            immatriculation: string;
+            typeAvion: { modele: string };
             aeroportDepart?: { codeIata: string };
             aeroportArrivee?: { codeIata: string };
         };
@@ -46,7 +53,7 @@ export const BonLivraison = React.forwardRef<HTMLDivElement, BonLivraisonProps>(
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
                             <Plane size={16} className="text-blue-500" />
-                            <span className="text-sm font-bold">{avitaillement.programmeVol.compagnie.nom}</span>
+                            <span className="text-sm font-bold">{avitaillement.suppliedTo || avitaillement.programmeVol.compagnie.nom}</span>
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="text-xs text-slate-500 w-24">N° de Vol</span>
@@ -54,11 +61,19 @@ export const BonLivraison = React.forwardRef<HTMLDivElement, BonLivraisonProps>(
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="text-xs text-slate-500 w-24">Immatriculation</span>
-                            <span className="text-sm font-bold underline decoration-blue-500/30">{avitaillement.programmeVol.avion.immatriculation}</span>
+                            <span className="text-sm font-bold underline decoration-blue-500/30">{avitaillement.immatriculation || avitaillement.programmeVol.immatriculation}</span>
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="text-xs text-slate-500 w-24">Type Appareil</span>
-                            <span className="text-sm">{avitaillement.programmeVol.avion.typeAvion.modele}</span>
+                            <span className="text-sm">{avitaillement.typeAvionManual || avitaillement.typeAvion?.modele || avitaillement.programmeVol.typeAvion.modele}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs text-slate-500 w-24">Route</span>
+                            <span className="text-sm font-mono font-bold text-slate-700">
+                                {avitaillement.routeFrom || avitaillement.programmeVol.aeroportDepart?.codeIata}
+                                <span className="mx-2 text-blue-400">→</span>
+                                {avitaillement.routeTo || avitaillement.programmeVol.aeroportArrivee?.codeIata}
+                            </span>
                         </div>
                     </div>
                 </div>

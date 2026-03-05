@@ -18,7 +18,7 @@ export default async function ProgrammeVolPage() {
             <ProgrammeVolClient
                 initialData={vols}
                 compagnies={formData.compagnies}
-                avions={formData.avions}
+                typeAvions={formData.typeAvions}
                 aeroports={formData.aeroports}
                 initialKpis={kpis}
             />

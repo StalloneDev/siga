@@ -42,25 +42,6 @@ export async function bulkImportAeroports(data: any[]) {
     }
 }
 
-// Avions Bulk
-export async function bulkImportAvions(data: any[]) {
-    try {
-        // Note: foreign keys (typeAvionId, compagnieId) must exist
-        await prisma.avion.createMany({
-            data: data.map(item => ({
-                immatriculation: item.immatriculation,
-                compagnieId: Number(item.compagnieId),
-                typeAvionId: Number(item.typeAvionId),
-            })),
-            skipDuplicates: true,
-        });
-        revalidatePath("/referentiel/avions");
-        return { success: true };
-    } catch (e) {
-        return { success: false, error: String(e) };
-    }
-}
-
 // TypeAvion Bulk
 export async function bulkImportTypeAvions(data: any[]) {
     try {
@@ -74,7 +55,7 @@ export async function bulkImportTypeAvions(data: any[]) {
             })),
             skipDuplicates: true,
         });
-        revalidatePath("/referentiel/avions");
+        // revalidatePath("/referentiel/avions"); // Removed since page is gone
         return { success: true };
     } catch (e) {
         return { success: false, error: String(e) };

@@ -12,28 +12,29 @@ export async function getProgrammeVols(date?: string) {
         where,
         include: {
             compagnie: true,
-            avion: { include: { typeAvion: true } },
+            typeAvion: true,
             aeroportArrivee: true,
             aeroportDepart: true,
             avitaillements: true,
-        },
+        } as any,
         orderBy: { heureArriveePrevue: "asc" },
     });
 }
 
 export async function getVolFormData() {
-    const [compagnies, avions, aeroports] = await Promise.all([
+    const [compagnies, typeAvions, aeroports] = await Promise.all([
         prisma.compagnieAerienne.findMany({ where: { actif: true }, orderBy: { nom: "asc" } }),
-        prisma.avion.findMany({ where: { actif: true }, include: { typeAvion: true, compagnie: true }, orderBy: { immatriculation: "asc" } }),
+        prisma.typeAvion.findMany({ orderBy: { modele: "asc" } }),
         prisma.aeroport.findMany({ where: { actif: true }, orderBy: { nom: "asc" } }),
     ]);
-    return { compagnies, avions, aeroports };
+    return { compagnies, typeAvions, aeroports };
 }
 
 export async function createVol(data: {
     numeroVol: string;
     compagnieId: number;
-    avionId: number;
+    immatriculation: string;
+    typeAvionManual: string;
     aeroportArriveeId: number;
     aeroportDepartId: number;
     dateProgrammee: string;
@@ -46,14 +47,15 @@ export async function createVol(data: {
             data: {
                 numeroVol: data.numeroVol,
                 compagnieId: data.compagnieId,
-                avionId: data.avionId,
+                immatriculation: data.immatriculation,
+                typeAvionManual: data.typeAvionManual,
                 aeroportArriveeId: data.aeroportArriveeId,
                 aeroportDepartId: data.aeroportDepartId,
                 dateProgrammee: new Date(data.dateProgrammee),
                 heureArriveePrevue: new Date(`${data.dateProgrammee}T${data.heureArriveePrevue}`),
                 heureDepartPrevue: new Date(`${data.dateProgrammee}T${data.heureDepartPrevue}`),
                 quantitePrevue: data.quantitePrevue,
-            },
+            } as any,
         });
         revalidatePath("/vols/programme");
         return { success: true };

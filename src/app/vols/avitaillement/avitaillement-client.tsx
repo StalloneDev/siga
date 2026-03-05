@@ -15,10 +15,17 @@ interface Avitaillement {
     compteurAvant: bigint;
     compteurApres: bigint;
     dateOperation: Date;
+    immatriculation?: string;
+    typeAvionManual?: string;
+    typeAvionId?: number;
+    routeFrom?: string;
+    routeTo?: string;
+    suppliedTo?: string;
     programmeVol: {
         numeroVol: string;
         compagnie: { nom: string };
-        avion: { immatriculation: string; typeAvion: { modele: string } };
+        immatriculation: string;
+        typeAvion: { modele: string };
         aeroportDepart?: { codeIata: string };
         aeroportArrivee?: { codeIata: string };
     };
@@ -26,11 +33,12 @@ interface Avitaillement {
 }
 
 export function AvitaillementClient({
-    initialData, vols, camions,
+    initialData, vols, camions, typeAvions,
 }: {
     initialData: Avitaillement[];
     vols: any[];
     camions: any[];
+    typeAvions: any[];
 }) {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [selectedAvitaillement, setSelectedAvitaillement] = React.useState<Avitaillement | null>(null);
@@ -60,11 +68,12 @@ export function AvitaillementClient({
         const exportData = data.map(a => ({
             "Date": new Date(a.dateOperation).toLocaleDateString("fr-FR"),
             "Heure": new Date(a.dateOperation).toLocaleTimeString("fr-FR"),
-            "Bon N°": a.numeroBonLivraison,
             "N° Vol": a.programmeVol.numeroVol,
-            "Compagnie": a.programmeVol.compagnie.nom,
-            "Immatriculation": a.programmeVol.avion.immatriculation,
-            "Modèle Avion": a.programmeVol.avion.typeAvion.modele,
+            "Compagnie": a.suppliedTo || a.programmeVol.compagnie.nom,
+            "Immatriculation": a.immatriculation || a.programmeVol.immatriculation,
+            "Modèle Avion": a.typeAvionManual || a.programmeVol.typeAvion.modele,
+            "Route FR": a.routeFrom || a.programmeVol.aeroportDepart?.codeIata,
+            "Route TO": a.routeTo || a.programmeVol.aeroportArrivee?.codeIata,
             "Camion": a.camion.nom,
             "Compteur Avant": Number(a.compteurAvant),
             "Compteur Après": Number(a.compteurApres),
@@ -142,8 +151,8 @@ export function AvitaillementClient({
                                         <td className="px-5 py-3 font-mono text-sm text-blue-400">{a.numeroBonLivraison}</td>
                                         <td className="px-5 py-3 font-mono text-sm font-bold text-white">{a.programmeVol.numeroVol}</td>
                                         <td className="px-5 py-3 text-sm text-slate-300">
-                                            <div>{a.programmeVol.avion.immatriculation}</div>
-                                            <div className="text-[10px] text-slate-500">{a.programmeVol.avion.typeAvion.modele}</div>
+                                            <div className="font-bold text-blue-400">{a.immatriculation || a.programmeVol.immatriculation}</div>
+                                            <div className="text-[10px] text-slate-500 uppercase">{a.typeAvionManual || a.programmeVol.typeAvion.modele}</div>
                                         </td>
                                         <td className="px-5 py-3 text-sm text-cyan-400">{a.camion.nom}</td>
                                         <td className="px-5 py-3 text-right font-mono text-xs text-slate-400">{Number(a.compteurAvant).toLocaleString()}</td>
@@ -174,7 +183,7 @@ export function AvitaillementClient({
             </div>
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Nouvel Avitaillement" maxWidth="4xl">
-                <AvitaillementForm vols={vols} camions={camions} onSuccess={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
+                <AvitaillementForm vols={vols} camions={camions} typeAvions={typeAvions} onSuccess={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
             </Modal>
         </div>
     );

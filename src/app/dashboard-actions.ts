@@ -18,11 +18,11 @@ export async function getDashboardData() {
             },
             include: {
                 compagnie: true,
-                avion: { include: { typeAvion: true } },
+                typeAvion: true,
                 aeroportArrivee: true,
                 aeroportDepart: true,
                 avitaillements: true,
-            },
+            } as any,
             orderBy: { heureArriveePrevue: "asc" },
         }).catch(() => []),
         prisma.$queryRaw<{ date: string; delivered: number; predicted: number }[]>`

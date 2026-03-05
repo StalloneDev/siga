@@ -5,13 +5,13 @@ import { createVol } from "@/app/vols/programme/actions";
 
 interface VolFormProps {
     compagnies: { id: number; nom: string; codeIata: string }[];
-    avions: { id: number; immatriculation: string; typeAvion: { modele: string }; compagnie: { codeIata: string } }[];
+    typeAvions: { id: number; modele: string; constructeur: string }[];
     aeroports: { id: number; nom: string; codeIata: string; ville: string }[];
     onSuccess: () => void;
     onCancel: () => void;
 }
 
-export function VolForm({ compagnies, avions, aeroports, onSuccess, onCancel }: VolFormProps) {
+export function VolForm({ compagnies, aeroports, onSuccess, onCancel }: VolFormProps) {
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().slice(0, 10));
@@ -24,7 +24,8 @@ export function VolForm({ compagnies, avions, aeroports, onSuccess, onCancel }: 
         const result = await createVol({
             numeroVol: fd.get("numeroVol") as string,
             compagnieId: parseInt(fd.get("compagnieId") as string),
-            avionId: parseInt(fd.get("avionId") as string),
+            immatriculation: fd.get("immatriculation") as string,
+            typeAvionManual: fd.get("typeAvionManual") as string,
             aeroportArriveeId: parseInt(fd.get("aeroportArriveeId") as string),
             aeroportDepartId: parseInt(fd.get("aeroportDepartId") as string),
             dateProgrammee: selectedDate,
@@ -58,12 +59,15 @@ export function VolForm({ compagnies, avions, aeroports, onSuccess, onCancel }: 
                 </div>
             </div>
 
-            <div className="space-y-1.5">
-                <label className={labelClass}>Avion</label>
-                <select name="avionId" required className={inputClass}>
-                    <option value="">Sélectionner...</option>
-                    {avions.map(a => <option key={a.id} value={a.id}>{a.immatriculation} — {a.typeAvion.modele} ({a.compagnie.codeIata})</option>)}
-                </select>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                    <label className={labelClass}>Immatriculation (Avion)</label>
+                    <input name="immatriculation" required className={`${inputClass} font-mono uppercase`} placeholder="F-GZCP" />
+                </div>
+                <div className="space-y-1.5">
+                    <label className={labelClass}>Type Avion</label>
+                    <input name="typeAvionManual" required className={`${inputClass} uppercase`} placeholder="B777, A320..." />
+                </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -10,16 +10,19 @@ interface AvitaillementFormProps {
         id: number;
         numeroVol: string;
         compagnie: { nom: string };
-        avion: { immatriculation: string; typeAvion: { modele: string; capaciteReservoir: number } };
+        immatriculation: string;
+        typeAvionId: number;
+        typeAvion: { modele: string; capaciteReservoir: number };
         aeroportDepart: { codeIata: string };
         aeroportArrivee: { codeIata: string };
     }[];
     camions: { id: number; nom: string }[];
+    typeAvions: { id: number; modele: string; constructeur: string }[];
     onSuccess: () => void;
     onCancel: () => void;
 }
 
-export function AvitaillementForm({ vols, camions, onSuccess, onCancel }: AvitaillementFormProps) {
+export function AvitaillementForm({ vols, camions, typeAvions, onSuccess, onCancel }: AvitaillementFormProps) {
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [selectedVolId, setSelectedVolId] = React.useState<number | "">("");
@@ -29,8 +32,32 @@ export function AvitaillementForm({ vols, camions, onSuccess, onCancel }: Avitai
     const [dateOp, setDateOp] = React.useState(new Date().toISOString().slice(0, 16));
     const [bonAuto] = React.useState(`BL-${Date.now().toString().slice(-6)}`);
 
+    // Override states
+    const [immatriculation, setImmatriculation] = React.useState("");
+    const [typeAvionManual, setTypeAvionManual] = React.useState("");
+    const [routeFrom, setRouteFrom] = React.useState("");
+    const [routeTo, setRouteTo] = React.useState("");
+    const [suppliedTo, setSuppliedTo] = React.useState("");
+
     const router = useRouter();
     const selectedVol = vols.find(v => v.id === selectedVolId);
+
+    // Sync overrides with selected flight
+    React.useEffect(() => {
+        if (selectedVol) {
+            setImmatriculation(selectedVol.immatriculation);
+            setTypeAvionManual(selectedVol.typeAvion.modele);
+            setRouteFrom(selectedVol.aeroportDepart?.codeIata || "");
+            setRouteTo(selectedVol.aeroportArrivee?.codeIata || "");
+            setSuppliedTo(selectedVol.compagnie.nom);
+        } else {
+            setImmatriculation("");
+            setTypeAvionManual("");
+            setRouteFrom("");
+            setRouteTo("");
+            setSuppliedTo("");
+        }
+    }, [selectedVolId, vols]);
 
     // Robust reactive calculation: we calculate as soon as we have a quantity
     const quantiteVal = typeof quantite === 'number' ? quantite : 0;
@@ -57,6 +84,11 @@ export function AvitaillementForm({ vols, camions, onSuccess, onCancel }: Avitai
             quantiteLivree: quantite as number,
             numeroBonLivraison: fd.get("numeroBonLivraison") as string,
             dateOperation: dateOp,
+            immatriculation: immatriculation,
+            typeAvionManual: typeAvionManual,
+            routeFrom: routeFrom,
+            routeTo: routeTo,
+            suppliedTo: suppliedTo,
         });
         if (result.success) onSuccess();
         else setError(result.error || "Erreur");
@@ -65,7 +97,7 @@ export function AvitaillementForm({ vols, camions, onSuccess, onCancel }: Avitai
 
     const inputClass = "w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-sm text-white focus:outline-none focus:border-blue-600/50 transition-all";
     const labelClass = "text-[10px] font-bold text-slate-500 uppercase tracking-widest";
-    const readOnlyBox = "w-full bg-slate-900/50 border border-slate-800/50 rounded-lg py-1.5 px-3 text-xs text-slate-400 font-medium min-h-[32px] flex items-center";
+    const editableBox = "w-full bg-slate-900/80 border border-slate-700 rounded-lg py-1 px-2 text-xs text-white focus:border-blue-500 transition-all";
 
     return (
         <form onSubmit={handleSubmit} className="p-1 space-y-3">
@@ -93,27 +125,69 @@ export function AvitaillementForm({ vols, camions, onSuccess, onCancel }: Avitai
                 </div>
             </div>
 
-            {/* Aircraft Details - Dense Row */}
-            <div className="bg-slate-900/40 border border-slate-800 rounded-lg p-2 grid grid-cols-4 gap-3">
-                <div className="space-y-0.5">
-                    <label className={labelClass}>Reg. Serial</label>
-                    <div className={`${readOnlyBox} font-mono uppercase text-blue-400`}>{selectedVol?.avion.immatriculation || "---"}</div>
-                </div>
-                <div className="space-y-0.5">
-                    <label className={labelClass}>Type Aircraft</label>
-                    <div className={readOnlyBox}>{selectedVol?.avion.typeAvion.modele || "---"}</div>
-                </div>
-                <div className="space-y-0.5">
-                    <label className={labelClass}>Route (From - To)</label>
-                    <div className={`${readOnlyBox} font-mono justify-center gap-2 italic`}>
-                        <span className="text-blue-400">{selectedVol?.aeroportDepart?.codeIata || "---"}</span>
-                        <span className="text-slate-600">→</span>
-                        <span className="text-purple-400">{selectedVol?.aeroportArrivee?.codeIata || "---"}</span>
+            {/* Aircraft Details & Route - Interactive Inputs */}
+            <div className="bg-slate-900/40 border border-slate-800 rounded-lg p-4 space-y-4">
+                <div className="grid grid-cols-4 gap-4">
+                    <div className="space-y-1.5">
+                        <label className={labelClass}>Reg. Serial</label>
+                        <div className="relative group">
+                            <Hash className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={14} />
+                            <input
+                                value={immatriculation}
+                                onChange={e => setImmatriculation(e.target.value.toUpperCase())}
+                                placeholder="Reg."
+                                className={`${editableBox} pl-8 font-mono text-blue-400 !py-2`}
+                            />
+                        </div>
                     </div>
-                </div>
-                <div className="space-y-0.5">
-                    <label className={labelClass}>Supplied To</label>
-                    <div className={readOnlyBox}>{selectedVol?.compagnie.nom || "---"}</div>
+                    <div className="space-y-1.5">
+                        <label className={labelClass}>Type Aircraft</label>
+                        <div className="relative group">
+                            <Plane className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={14} />
+                            <input
+                                value={typeAvionManual}
+                                onChange={e => setTypeAvionManual(e.target.value.toUpperCase())}
+                                placeholder="Select Type..."
+                                className={`${editableBox} pl-8 !py-2 uppercase font-medium`}
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className={labelClass}>Route (From - To)</label>
+                        <div className="flex items-center gap-1 group">
+                            <div className="relative w-1/2">
+                                <input
+                                    value={routeFrom}
+                                    onChange={e => setRouteFrom(e.target.value.toUpperCase())}
+                                    placeholder="FR"
+                                    className={`${editableBox} font-mono text-center !py-2 border-blue-500/20 focus:border-blue-500`}
+                                    maxLength={4}
+                                />
+                            </div>
+                            <span className="text-slate-600 font-black px-1 scale-125 select-none">→</span>
+                            <div className="relative w-1/2">
+                                <input
+                                    value={routeTo}
+                                    onChange={e => setRouteTo(e.target.value.toUpperCase())}
+                                    placeholder="TO"
+                                    className={`${editableBox} font-mono text-center !py-2 border-purple-500/20 focus:border-purple-500`}
+                                    maxLength={4}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className={labelClass}>Supplied To</label>
+                        <div className="relative group">
+                            <User className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={14} />
+                            <input
+                                value={suppliedTo}
+                                onChange={e => setSuppliedTo(e.target.value)}
+                                placeholder="Compagnie"
+                                className={`${editableBox} pl-8 !py-2 font-semibold`}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 

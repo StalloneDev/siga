@@ -23,7 +23,9 @@ interface Vol {
     heureArriveePrevue: Date;
     heureDepartPrevue: Date;
     compagnie: { nom: string; codeIata: string };
-    avion: { immatriculation: string; typeAvion: { modele: string; capaciteReservoir: number } };
+    immatriculation: string;
+    typeAvionManual?: string;
+    typeAvion?: { modele: string; capaciteReservoir: number };
     aeroportArrivee: { codeIata: string; ville: string };
     aeroportDepart: { codeIata: string; ville: string };
     avitaillements: { quantiteLivree: number }[];
@@ -31,11 +33,11 @@ interface Vol {
 }
 
 export function ProgrammeVolClient({
-    initialData, compagnies, avions, aeroports, initialKpis
+    initialData, compagnies, typeAvions, aeroports, initialKpis
 }: {
     initialData: Vol[];
     compagnies: any[];
-    avions: any[];
+    typeAvions: any[];
     aeroports: any[];
     initialKpis: any;
 }) {
@@ -181,8 +183,8 @@ export function ProgrammeVolClient({
                                                 <td className="px-5 py-3 font-mono text-sm font-bold text-white">{vol.numeroVol}</td>
                                                 <td className="px-5 py-3 text-sm text-slate-300">{vol.compagnie.nom}</td>
                                                 <td className="px-5 py-3">
-                                                    <div className="text-sm text-slate-200">{vol.avion.immatriculation}</div>
-                                                    <div className="text-[10px] text-slate-500">{vol.avion.typeAvion.modele}</div>
+                                                    <div className="text-sm font-bold text-blue-400">{vol.immatriculation}</div>
+                                                    <div className="text-[10px] text-slate-500 uppercase">{vol.typeAvionManual || vol.typeAvion?.modele || "N/A"}</div>
                                                 </td>
                                                 <td className="px-5 py-3 font-mono text-sm text-blue-400">{vol.aeroportArrivee.codeIata}</td>
                                                 <td className="px-5 py-3 font-mono text-sm text-purple-400">{vol.aeroportDepart.codeIata}</td>
@@ -236,7 +238,7 @@ export function ProgrammeVolClient({
             </div>
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Ajouter au Programme de Vol">
-                <VolForm compagnies={compagnies} avions={avions} aeroports={aeroports} onSuccess={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
+                <VolForm compagnies={compagnies} typeAvions={typeAvions} aeroports={aeroports} onSuccess={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
             </Modal>
         </div>
     );

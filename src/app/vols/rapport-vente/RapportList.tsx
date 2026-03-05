@@ -26,12 +26,12 @@ export function RapportList({ initialData }: RapportListProps) {
     const handleExport = () => {
         const exportData = filteredData.map(item => ({
             "Date": new Date(item.dateOperation).toLocaleDateString("fr-FR"),
-            "Supplied To": item.programmeVol?.compagnie?.nom || "N/A",
-            "Registred Serial N°": item.programmeVol?.avion?.immatriculation || "N/A",
+            "Supplied To": item.suppliedTo || item.programmeVol?.compagnie?.nom || "N/A",
+            "Registred Serial N°": item.immatriculation || item.programmeVol?.immatriculation || "N/A",
             "Flight N°": item.programmeVol?.numeroVol || "N/A",
-            "Type Aircraft": item.programmeVol?.avion?.typeAvion?.modele || "N/A",
-            "Arrived From": item.programmeVol?.aeroportDepart?.codeIata || "N/A",
-            "Proceeding To": item.programmeVol?.aeroportArrivee?.codeIata || "N/A",
+            "Type Aircraft": item.typeAvionManual || item.typeAvion?.modele || item.programmeVol?.typeAvion?.modele || "N/A",
+            "Arrived From": item.routeFrom || item.programmeVol?.aeroportDepart?.codeIata || "N/A",
+            "Proceeding To": item.routeTo || item.programmeVol?.aeroportArrivee?.codeIata || "N/A",
             "Delivery Note No.": item.numeroBonLivraison || "N/A",
             "Meter Before": Number(item.compteurAvant),
             "Meter After": Number(item.compteurApres),
@@ -118,22 +118,22 @@ export function RapportList({ initialData }: RapportListProps) {
                                             {new Date(item.dateOperation).toLocaleDateString("fr-FR")}
                                         </td>
                                         <td className="p-4 text-sm font-bold text-white text-center">
-                                            {item.programmeVol?.compagnie?.nom || "N/A"}
+                                            {item.suppliedTo || item.programmeVol?.compagnie?.nom || "N/A"}
                                         </td>
                                         <td className="p-4 text-sm text-blue-400 font-mono text-center">
-                                            {item.programmeVol?.avion?.immatriculation || "N/A"}
+                                            {item.immatriculation || item.programmeVol?.immatriculation || "N/A"}
                                         </td>
                                         <td className="p-4 text-sm text-slate-300 font-bold text-center">
                                             {item.programmeVol?.numeroVol || "N/A"}
                                         </td>
                                         <td className="p-4 text-sm text-slate-400 text-center">
-                                            {item.programmeVol?.avion?.typeAvion?.modele || "N/A"}
+                                            {item.typeAvionManual || item.typeAvion?.modele || item.programmeVol?.typeAvion?.modele || "N/A"}
                                         </td>
                                         <td className="p-4 text-sm font-bold text-slate-300 text-center">
-                                            {item.programmeVol?.aeroportDepart?.codeIata || "N/A"}
+                                            {item.routeFrom || item.programmeVol?.aeroportDepart?.codeIata || "N/A"}
                                         </td>
                                         <td className="p-4 text-sm font-bold text-slate-300 text-center">
-                                            {item.programmeVol?.aeroportArrivee?.codeIata || "N/A"}
+                                            {item.routeTo || item.programmeVol?.aeroportArrivee?.codeIata || "N/A"}
                                         </td>
                                         <td className="p-4 text-sm text-blue-400 font-medium text-center">
                                             {item.numeroBonLivraison || "N/A"}

@@ -7,7 +7,7 @@ import { checkStockAlert } from "@/lib/alert-service";
 export async function getAvitaillements() {
     return await prisma.avitaillement.findMany({
         include: {
-            programmeVol: { include: { compagnie: true, avion: { include: { typeAvion: true } } } },
+            programmeVol: { include: { compagnie: true, typeAvion: true } as any },
             camion: true,
         },
         orderBy: { dateOperation: "desc" },
@@ -32,15 +32,16 @@ export async function getLastCounter(camionId: number) {
 }
 
 export async function getAvitaillementFormData() {
-    const [vols, camions] = await Promise.all([
+    const [vols, camions, typeAvions] = await Promise.all([
         prisma.programmeVol.findMany({
             where: { statut: { in: ["PREVU", "ARRIVE"] } },
-            include: { compagnie: true, avion: { include: { typeAvion: true } } },
+            include: { compagnie: true, typeAvion: true } as any,
             orderBy: { heureArriveePrevue: "asc" },
         }),
         prisma.equipementStockage.findMany({ where: { typeEquipement: "CAMION", actif: true }, orderBy: { nom: "asc" } }),
+        prisma.typeAvion.findMany({ orderBy: { modele: "asc" } }),
     ]);
-    return { vols, camions };
+    return { vols, camions, typeAvions };
 }
 
 export async function createAvitaillement(data: {
@@ -49,6 +50,12 @@ export async function createAvitaillement(data: {
     quantiteLivree: number;
     numeroBonLivraison: string;
     dateOperation: string;
+    immatriculation?: string;
+    typeAvionManual?: string;
+    typeAvionId?: number;
+    routeFrom?: string;
+    routeTo?: string;
+    suppliedTo?: string;
 }) {
     try {
         // Fetch the absolute latest counter for this truck on the server
@@ -64,8 +71,14 @@ export async function createAvitaillement(data: {
                 compteurApres: BigInt(Math.floor(apres)),
                 numeroBonLivraison: data.numeroBonLivraison,
                 dateOperation: new Date(data.dateOperation),
+                immatriculation: data.immatriculation,
+                typeAvionManual: data.typeAvionManual,
+                typeAvionId: data.typeAvionId,
+                routeFrom: data.routeFrom,
+                routeTo: data.routeTo,
+                suppliedTo: data.suppliedTo,
                 operateurId: null as any,
-            },
+            } as any,
         });
 
         // Automatic stock movement (OUT from Truck)
