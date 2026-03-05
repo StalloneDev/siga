@@ -16,7 +16,7 @@ export async function getProgrammeVols(date?: string) {
             aeroportArrivee: true,
             aeroportDepart: true,
             avitaillements: true,
-        } as any,
+        },
         orderBy: { heureArriveePrevue: "asc" },
     });
 }

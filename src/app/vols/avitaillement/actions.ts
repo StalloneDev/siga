@@ -7,7 +7,7 @@ import { checkStockAlert } from "@/lib/alert-service";
 export async function getAvitaillements() {
     return await prisma.avitaillement.findMany({
         include: {
-            programmeVol: { include: { compagnie: true, typeAvion: true } as any },
+            programmeVol: { include: { compagnie: true, typeAvion: true } },
             camion: true,
         },
         orderBy: { dateOperation: "desc" },
@@ -35,7 +35,7 @@ export async function getAvitaillementFormData() {
     const [vols, camions, typeAvions] = await Promise.all([
         prisma.programmeVol.findMany({
             where: { statut: { in: ["PREVU", "ARRIVE"] } },
-            include: { compagnie: true, typeAvion: true } as any,
+            include: { compagnie: true, typeAvion: true },
             orderBy: { heureArriveePrevue: "asc" },
         }),
         prisma.equipementStockage.findMany({ where: { typeEquipement: "CAMION", actif: true }, orderBy: { nom: "asc" } }),
@@ -78,7 +78,7 @@ export async function createAvitaillement(data: {
                 routeTo: data.routeTo,
                 suppliedTo: data.suppliedTo,
                 operateurId: null as any,
-            } as any,
+            },
         });
 
         // Automatic stock movement (OUT from Truck)

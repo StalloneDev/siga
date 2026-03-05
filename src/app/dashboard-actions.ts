@@ -22,7 +22,7 @@ export async function getDashboardData() {
                 aeroportArrivee: true,
                 aeroportDepart: true,
                 avitaillements: true,
-            } as any,
+            },
             orderBy: { heureArriveePrevue: "asc" },
         }).catch(() => []),
         prisma.$queryRaw<{ date: string; delivered: number; predicted: number }[]>`
