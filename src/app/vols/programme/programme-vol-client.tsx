@@ -24,8 +24,8 @@ interface Vol {
     heureDepartPrevue: Date;
     compagnie: { nom: string; codeIata: string };
     immatriculation: string;
-    typeAvionManual?: string;
-    typeAvion?: { modele: string; capaciteReservoir: number };
+    typeAvionManual: string | null;
+    typeAvion: { modele: string; capaciteReservoir: number } | null;
     aeroportArrivee: { codeIata: string; ville: string };
     aeroportDepart: { codeIata: string; ville: string };
     avitaillements: { quantiteLivree: number }[];
