@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { createTypeAvion } from "@/app/referentiel/avions/actions";
+import { createTypeAvion } from "@/app/referentiel/type-avions/actions";
 
 export function TypeAvionForm({ onSuccess, onCancel }: { onSuccess: () => void, onCancel: () => void }) {
     const [loading, setLoading] = React.useState(false);
