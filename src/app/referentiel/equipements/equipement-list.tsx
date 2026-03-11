@@ -43,6 +43,8 @@ export function EquipementList({ initialData }: { initialData: Equipement[] }) {
         XLSX.writeFile(wb, "SIGA_Referentiel_Equipements.xlsx");
     };
 
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
     const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -84,10 +86,11 @@ export function EquipementList({ initialData }: { initialData: Equipement[] }) {
             <div className="flex flex-wrap items-center justify-end gap-3">
                 <input
                     type="file"
-                    id="import-excel-eq"
+                    ref={fileInputRef}
                     className="hidden"
                     accept=".xlsx, .xls"
                     onChange={handleImport}
+                    onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
                 />
                 <button
                     onClick={handleDownloadTemplate}
@@ -97,7 +100,7 @@ export function EquipementList({ initialData }: { initialData: Equipement[] }) {
                     Modèle
                 </button>
                 <button
-                    onClick={() => document.getElementById('import-excel-eq')?.click()}
+                    onClick={() => fileInputRef.current?.click()}
                     className="bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg px-4 py-2 text-sm font-bold flex items-center gap-2 border border-slate-700 transition-all"
                 >
                     <Upload size={18} />
