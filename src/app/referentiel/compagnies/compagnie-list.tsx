@@ -76,9 +76,11 @@ export function CompagnieList({ initialData }: { initialData: Compagnie[] }) {
             const items = XLSX.utils.sheet_to_json(ws);
 
             if (items.length > 0) {
-                const result = await bulkImportCompagnies(items);
+                // Ensure plain objects for Server Actions
+                const plainItems = JSON.parse(JSON.stringify(items));
+                const result = await bulkImportCompagnies(plainItems) as any;
                 if (result.success) {
-                    alert(`${items.length} compagnies importées avec succès.`);
+                    alert(`${result.count} compagnies importées (${result.total} traitées).`);
                     window.location.reload();
                 } else {
                     alert("Erreur lors de l'importation : " + result.error);

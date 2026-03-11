@@ -35,3 +35,22 @@ export async function deleteEquipement(id: number) {
         return { success: false, error: "Erreur lors de la suppression" };
     }
 }
+
+export async function updateEquipement(id: number, data: {
+    nom: string;
+    typeEquipement: EquipementType;
+    capaciteMaximale: number;
+    stockInitial: number;
+    seuilAlerte: number;
+}) {
+    try {
+        await prisma.equipementStockage.update({
+            where: { id },
+            data
+        });
+        revalidatePath("/referentiel/equipements");
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: "Erreur lors de la mise à jour de l'équipement" };
+    }
+}

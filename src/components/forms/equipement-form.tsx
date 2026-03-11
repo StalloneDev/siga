@@ -1,23 +1,39 @@
 "use client";
 
 import React from "react";
-import { createEquipement } from "@/app/referentiel/equipements/actions";
+import { createEquipement, updateEquipement } from "@/app/referentiel/equipements/actions";
 import { EquipementType } from "@prisma/client";
 
-export function EquipementForm({ onSuccess, onCancel }: { onSuccess: () => void, onCancel: () => void }) {
+export function EquipementForm({ onSuccess, onCancel, initialData }: { 
+    onSuccess: () => void, 
+    onCancel: () => void,
+    initialData?: {
+        id: number;
+        nom: string;
+        typeEquipement: EquipementType;
+        capaciteMaximale: number;
+        stockInitial: number;
+        seuilAlerte: number;
+    }
+}) {
     const [loading, setLoading] = React.useState(false);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setLoading(true);
         const formData = new FormData(e.currentTarget);
-        const result = await createEquipement({
+        const data = {
             nom: formData.get("nom") as string,
             typeEquipement: formData.get("typeEquipement") as EquipementType,
             capaciteMaximale: parseInt(formData.get("capaciteMaximale") as string),
             stockInitial: parseInt(formData.get("stockInitial") as string),
             seuilAlerte: parseInt(formData.get("seuilAlerte") as string),
-        });
+        };
+
+        const result = initialData 
+            ? await updateEquipement(initialData.id, data)
+            : await createEquipement(data);
+
         if (result.success) onSuccess();
         else alert(result.error);
         setLoading(false);
@@ -26,10 +42,10 @@ export function EquipementForm({ onSuccess, onCancel }: { onSuccess: () => void,
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500 uppercase">Nom de l'équipement</label>
-                <input name="nom" required className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-white" placeholder="Ex: BAC 1 ou Refueller R-28" /></div>
+                <input name="nom" required defaultValue={initialData?.nom} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-white" placeholder="Ex: BAC 1 ou Refueller R-28" /></div>
 
             <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500 uppercase">Type</label>
-                <select name="typeEquipement" required className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-white">
+                <select name="typeEquipement" required defaultValue={initialData?.typeEquipement || "BAC"} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-white">
                     <option value="BAC">BAC (Stockage fixe)</option>
                     <option value="CAMION">CAMION (Avitailleur)</option>
                 </select>
@@ -37,13 +53,13 @@ export function EquipementForm({ onSuccess, onCancel }: { onSuccess: () => void,
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500 uppercase">Capacité Max (L)</label>
-                    <input name="capaciteMaximale" type="number" required className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-white font-mono" placeholder="1500000" /></div>
+                    <input name="capaciteMaximale" type="number" required defaultValue={initialData?.capaciteMaximale} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-white font-mono" placeholder="1500000" /></div>
                 <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500 uppercase">Stock Initial (L)</label>
-                    <input name="stockInitial" type="number" required className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-white font-mono" placeholder="0" /></div>
+                    <input name="stockInitial" type="number" required defaultValue={initialData?.stockInitial} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-white font-mono" placeholder="0" /></div>
             </div>
 
             <div className="space-y-1.5"><label className="text-xs font-bold text-amber-500 uppercase">Seuil d'alerte (L)</label>
-                <input name="seuilAlerte" type="number" required className="w-full bg-slate-950 border border-amber-900/30 rounded-lg py-2 px-3 text-sm text-amber-100 font-mono" placeholder="Ex: 5000" />
+                <input name="seuilAlerte" type="number" required defaultValue={initialData?.seuilAlerte} className="w-full bg-slate-950 border border-amber-900/30 rounded-lg py-2 px-3 text-sm text-amber-100 font-mono" placeholder="Ex: 5000" />
                 <p className="text-[10px] text-slate-500 italic">Un email sera envoyé quand le stock descend sous ce seuil.</p>
             </div>
 

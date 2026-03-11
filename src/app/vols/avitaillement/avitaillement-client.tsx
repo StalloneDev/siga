@@ -33,12 +33,13 @@ interface Avitaillement {
 }
 
 export function AvitaillementClient({
-    initialData, vols, camions, typeAvions,
+    initialData, vols, camions, typeAvions, compagnies
 }: {
     initialData: Avitaillement[];
     vols: any[];
     camions: any[];
     typeAvions: any[];
+    compagnies: any[];
 }) {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [selectedAvitaillement, setSelectedAvitaillement] = React.useState<Avitaillement | null>(null);
@@ -183,7 +184,7 @@ export function AvitaillementClient({
             </div>
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Nouvel Avitaillement" maxWidth="4xl">
-                <AvitaillementForm vols={vols} camions={camions} typeAvions={typeAvions} onSuccess={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
+                <AvitaillementForm vols={vols} camions={camions} typeAvions={typeAvions} compagnies={compagnies} onSuccess={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
             </Modal>
         </div>
     );

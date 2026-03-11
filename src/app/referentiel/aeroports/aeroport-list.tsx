@@ -69,9 +69,10 @@ export function AeroportList({ initialData }: { initialData: Aeroport[] }) {
             const items = XLSX.utils.sheet_to_json(ws);
 
             if (items.length > 0) {
-                const result = await bulkImportAeroports(items);
+                const plainItems = JSON.parse(JSON.stringify(items));
+                const result = await bulkImportAeroports(plainItems) as any;
                 if (result.success) {
-                    alert(`${items.length} aéroports importés avec succès.`);
+                    alert(`${result.count} aéroports importés (${result.total} traités).`);
                     window.location.reload();
                 } else {
                     alert("Erreur lors de l'importation : " + result.error);

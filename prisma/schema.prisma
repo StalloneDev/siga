@@ -8,14 +8,14 @@ datasource db {
 }
 
 model CompagnieAerienne {
-  id       Int            @id @default(autoincrement())
-  nom      String
-  codeIata String         @unique @map("code_iata")
-  codeIcao String         @map("code_icao")
-  pays     String
-  actif    Boolean        @default(true)
-  vols         ProgrammeVol[]
+  id           Int                      @id @default(autoincrement())
+  nom          String
+  codeIata     String                   @unique @map("code_iata")
+  codeIcao     String                   @map("code_icao")
+  pays         String
+  actif        Boolean                  @default(true)
   commentaires CommentaireComparaison[]
+  vols         ProgrammeVol[]
 
   @@map("compagnie_aerienne")
 }
@@ -35,41 +35,37 @@ model Aeroport {
 }
 
 model TypeAvion {
-  id                Int     @id @default(autoincrement())
+  id                Int             @id @default(autoincrement())
   constructeur      String
   modele            String
-  codeIata          String  @map("code_iata")
-  codeIcao          String  @map("code_icao")
-  capaciteReservoir Int     @map("capacite_reservoir")
-  vols              ProgrammeVol[]
+  codeIata          String          @map("code_iata")
+  codeIcao          String          @map("code_icao")
+  capaciteReservoir Int             @map("capacite_reservoir")
   avitaillements    Avitaillement[]
+  vols              ProgrammeVol[]
 
   @@map("type_avion")
 }
 
-
 model EquipementStockage {
-  id               Int                      @id @default(autoincrement())
-  nom              String
-  typeEquipement   EquipementType           @map("type_equipement")
-  capaciteMaximale Int                      @map("capacite_maximale")
-  stockInitial     Int                      @map("stock_initial")
-  seuilAlerte      Int                      @default(0) @map("seuil_alerte")
-  actif            Boolean                  @default(true)
-  
-  // Maintenance fields
-  dateDerniereMaintenance DateTime? @map("date_derniere_maintenance")
-  dateProchaineMaintenance DateTime? @map("date_prochaine_maintenance")
-  journalMaintenance      JournalMaintenance[]
-
-  avitaillements   Avitaillement[]
-  jaugeages        Jaugeage[]
-  mouvements       MouvementStock[]
-  rapports         RapportStockJournalier[]
-  receptions       ReceptionCarburant[]
-  notifications    NotificationSysteme[]
-  transfertsDest   TransfertCarburant[]     @relation("Destination")
-  transfertsSource TransfertCarburant[]     @relation("Source")
+  id                       Int                      @id @default(autoincrement())
+  nom                      String
+  typeEquipement           EquipementType           @map("type_equipement")
+  capaciteMaximale         Int                      @map("capacite_maximale")
+  stockInitial             Int                      @map("stock_initial")
+  seuilAlerte              Int                      @default(0) @map("seuil_alerte")
+  actif                    Boolean                  @default(true)
+  dateDerniereMaintenance  DateTime?                @map("date_derniere_maintenance")
+  dateProchaineMaintenance DateTime?                @map("date_prochaine_maintenance")
+  avitaillements           Avitaillement[]
+  jaugeages                Jaugeage[]
+  journalMaintenance       JournalMaintenance[]
+  mouvements               MouvementStock[]
+  notifications            NotificationSysteme[]
+  rapports                 RapportStockJournalier[]
+  receptions               ReceptionCarburant[]
+  transfertsDest           TransfertCarburant[]     @relation("Destination")
+  transfertsSource         TransfertCarburant[]     @relation("Source")
 
   @@map("equipement_stockage")
 }
@@ -78,8 +74,8 @@ model JournalMaintenance {
   id           Int                @id @default(autoincrement())
   equipementId Int                @map("equipement_id")
   date         DateTime
-  type         String             // REVISION, NETTOYAGE, REPARATION, AUTRE
-  description  String?            @db.Text
+  type         String
+  description  String?
   intervenant  String?
   cout         Decimal?           @db.Decimal(10, 2)
   equipement   EquipementStockage @relation(fields: [equipementId], references: [id])
@@ -87,34 +83,30 @@ model JournalMaintenance {
   @@map("journal_maintenance")
 }
 
-// ... existing models ...
-
 model Utilisateur {
-  id        Int               @id @default(autoincrement())
-  nom       String
-  prenom    String
-  email     String?           @unique
-  password  String            // Haché avec bcrypt
-  profil    ProfilUtilisateur
-  actif     Boolean           @default(true)
-  createdAt DateTime          @default(now()) @map("created_at")
-  updatedAt DateTime          @updatedAt @map("updated_at")
-
-  // Relations pour le traçage
+  id             Int                  @id @default(autoincrement())
+  nom            String
+  prenom         String
+  email          String?              @unique
+  password       String
+  profil         ProfilUtilisateur
+  actif          Boolean              @default(true)
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
   avitaillements Avitaillement[]
-  transferts     TransfertCarburant[]
   jaugeages      Jaugeage[]
+  transferts     TransfertCarburant[]
 
   @@map("utilisateur")
 }
 
 model NotificationSysteme {
-  id           Int                @id @default(autoincrement())
+  id           Int                 @id @default(autoincrement())
   message      String
-  type         String             @default("warning") // warning, critical, info
-  isRead       Boolean            @default(false) @map("is_read")
-  equipementId Int?               @map("equipement_id")
-  createdAt    DateTime           @default(now()) @map("created_at")
+  type         String              @default("warning")
+  isRead       Boolean             @default(false) @map("is_read")
+  equipementId Int?                @map("equipement_id")
+  createdAt    DateTime            @default(now()) @map("created_at")
   equipement   EquipementStockage? @relation(fields: [equipementId], references: [id])
 
   @@map("notification_systeme")
@@ -125,7 +117,6 @@ model ProgrammeVol {
   numeroVol          String                  @map("numero_vol")
   compagnieId        Int                     @map("compagnie_id")
   immatriculation    String
-  typeAvionManual    String?                 @map("type_avion_manual")
   typeAvionId        Int?                    @map("type_avion_id")
   aeroportArriveeId  Int                     @map("aeroport_arrivee_id")
   aeroportDepartId   Int                     @map("aeroport_depart_id")
@@ -134,13 +125,14 @@ model ProgrammeVol {
   heureDepartPrevue  DateTime                @map("heure_depart_prevue")
   statut             VolStatut               @default(PREVU)
   quantitePrevue     Int                     @default(0) @map("quantite_prevue")
+  typeAvionManual    String?                 @map("type_avion_manual")
   avitaillements     Avitaillement[]
   performance        PerformanceJournaliere?
   previsions         PrevisionVol[]
   aeroportArrivee    Aeroport                @relation("Arrivee", fields: [aeroportArriveeId], references: [id])
   aeroportDepart     Aeroport                @relation("Depart", fields: [aeroportDepartId], references: [id])
-  typeAvion          TypeAvion?              @relation(fields: [typeAvionId], references: [id])
   compagnie          CompagnieAerienne       @relation(fields: [compagnieId], references: [id])
+  typeAvion          TypeAvion?              @relation(fields: [typeAvionId], references: [id])
 
   @@map("programme_vol")
 }
@@ -186,19 +178,16 @@ model Avitaillement {
   numeroBonLivraison String             @unique @map("numero_bon_livraison")
   operateurId        Int?               @map("operateur_id")
   dateOperation      DateTime           @default(now()) @map("date_operation")
-  
-  // Fields for manual input/persistence
   immatriculation    String?
-  typeAvionManual    String?            @map("type_avion_manual")
   typeAvionId        Int?               @map("type_avion_id")
   routeFrom          String?            @map("route_from")
   routeTo            String?            @map("route_to")
   suppliedTo         String?            @map("supplied_to")
-
+  typeAvionManual    String?            @map("type_avion_manual")
   camion             EquipementStockage @relation(fields: [camionId], references: [id])
+  operateur          Utilisateur?       @relation(fields: [operateurId], references: [id])
   programmeVol       ProgrammeVol       @relation(fields: [programmeVolId], references: [id])
   typeAvion          TypeAvion?         @relation(fields: [typeAvionId], references: [id])
-  operateur          Utilisateur?       @relation(fields: [operateurId], references: [id])
 
   @@map("avitaillement")
 }
@@ -226,8 +215,8 @@ model Jaugeage {
   stockTheorique Int                @map("stock_theorique")
   ecart          Int
   controleurId   Int?               @map("controleur_id")
-  equipement     EquipementStockage @relation(fields: [equipementId], references: [id])
   controleur     Utilisateur?       @relation(fields: [controleurId], references: [id])
+  equipement     EquipementStockage @relation(fields: [equipementId], references: [id])
 
   @@map("jaugeage")
 }
@@ -285,7 +274,7 @@ model CommentaireComparaison {
   id          Int               @id @default(autoincrement())
   date        DateTime          @db.Date
   compagnieId Int               @map("compagnie_id")
-  commentaire String            @db.Text
+  commentaire String
   updatedAt   DateTime          @updatedAt @map("updated_at")
   compagnie   CompagnieAerienne @relation(fields: [compagnieId], references: [id])
 

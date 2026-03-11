@@ -23,7 +23,13 @@ export default async function AvitaillementPage() {
                     Enregistrement des opérations de carburant avec verrouillage des compteurs totalisateurs.
                 </p>
             </div>
-            <AvitaillementClient initialData={serialized as any} vols={formData.vols} camions={formData.camions} typeAvions={formData.typeAvions} />
+            <AvitaillementClient 
+                initialData={serialized as any} 
+                vols={formData.vols} 
+                camions={formData.camions} 
+                typeAvions={formData.typeAvions} 
+                compagnies={formData.compagnies}
+            />
         </div>
     );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Plus, Trash2, Fuel, Truck, Download, Upload, FileText } from "lucide-react";
+import { Plus, Trash2, Fuel, Truck, Download, Upload, FileText, Edit2 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { EquipementForm } from "@/components/forms/equipement-form";
 import { deleteEquipement } from "./actions";
@@ -15,13 +15,25 @@ interface Equipement {
     typeEquipement: EquipementType;
     capaciteMaximale: number;
     stockInitial: number;
+    seuilAlerte: number;
 }
 
 export function EquipementList({ initialData }: { initialData: Equipement[] }) {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [selectedEquipement, setSelectedEquipement] = React.useState<Equipement | null>(null);
     const [data, setData] = React.useState(initialData);
 
     React.useEffect(() => { setData(initialData); }, [initialData]);
+
+    const handleEdit = (eq: Equipement) => {
+        setSelectedEquipement(eq);
+        setIsModalOpen(true);
+    };
+
+    const handleAdd = () => {
+        setSelectedEquipement(null);
+        setIsModalOpen(true);
+    };
 
     async function handleDelete(id: number) {
         if (confirm("Supprimer cet équipement ?")) {
@@ -35,7 +47,8 @@ export function EquipementList({ initialData }: { initialData: Equipement[] }) {
             "Nom": eq.nom,
             "Type": eq.typeEquipement,
             "Capacité Maximale (L)": eq.capaciteMaximale,
-            "Stock Initial (L)": eq.stockInitial
+            "Stock Initial (L)": eq.stockInitial,
+            "Seuil Alerte": eq.seuilAlerte
         }));
         const ws = XLSX.utils.json_to_sheet(exportData);
         const wb = XLSX.utils.book_new();
@@ -58,9 +71,10 @@ export function EquipementList({ initialData }: { initialData: Equipement[] }) {
             const items = XLSX.utils.sheet_to_json(ws);
 
             if (items.length > 0) {
-                const result = await bulkImportEquipements(items);
+                const plainItems = JSON.parse(JSON.stringify(items));
+                const result = await bulkImportEquipements(plainItems) as any;
                 if (result.success) {
-                    alert(`${items.length} équipements importés avec succès.`);
+                    alert(`${result.count} équipements importés (${result.total} traités).`);
                     window.location.reload();
                 } else {
                     alert("Erreur lors de l'importation : " + result.error);
@@ -113,7 +127,7 @@ export function EquipementList({ initialData }: { initialData: Equipement[] }) {
                     <Download size={18} />
                     Exporter
                 </button>
-                <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-4 py-2 text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-900/20 transition-all">
+                <button onClick={handleAdd} className="bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-4 py-2 text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-900/20 transition-all">
                     <Plus size={18} /> Ajouter un équipement
                 </button>
             </div>
@@ -139,18 +153,23 @@ export function EquipementList({ initialData }: { initialData: Equipement[] }) {
                             </div>
 
                             <div className="space-y-3 py-4 border-y border-slate-800/50 mb-4">
-                                <div>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Capacité Maximale</p>
-                                    <p className="text-sm font-mono text-slate-200">{eq.capaciteMaximale.toLocaleString()} L</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Stock Initial</p>
-                                    <p className="text-sm font-mono text-slate-200">{eq.stockInitial.toLocaleString()} L</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Capacité Max</p>
+                                        <p className="text-sm font-mono text-slate-200">{eq.capaciteMaximale.toLocaleString()} L</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Stock Initial</p>
+                                        <p className="text-sm font-mono text-slate-200">{eq.stockInitial.toLocaleString()} L</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end">
-                                <button onClick={() => handleDelete(eq.id)} className="text-slate-600 hover:text-red-500 transition-colors p-1">
+                            <div className="flex justify-end gap-2">
+                                <button onClick={() => handleEdit(eq)} className="text-slate-500 hover:text-blue-400 transition-colors p-1 rounded-md hover:bg-slate-800">
+                                    <Edit2 size={18} />
+                                </button>
+                                <button onClick={() => handleDelete(eq.id)} className="text-slate-600 hover:text-red-500 transition-colors p-1 rounded-md hover:bg-slate-800">
                                     <Trash2 size={18} />
                                 </button>
                             </div>
@@ -159,8 +178,12 @@ export function EquipementList({ initialData }: { initialData: Equipement[] }) {
                 )}
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Nouvel Équipement">
-                <EquipementForm onSuccess={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={selectedEquipement ? "Modifier l'équipement" : "Nouvel Équipement"}>
+                <EquipementForm 
+                    initialData={selectedEquipement as any}
+                    onSuccess={() => setIsModalOpen(false)} 
+                    onCancel={() => setIsModalOpen(false)} 
+                />
             </Modal>
         </div>
     );

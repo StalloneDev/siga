@@ -32,7 +32,7 @@ export async function getLastCounter(camionId: number) {
 }
 
 export async function getAvitaillementFormData() {
-    const [vols, camions, typeAvions] = await Promise.all([
+    const [vols, camions, typeAvions, compagnies] = await Promise.all([
         prisma.programmeVol.findMany({
             where: { statut: { in: ["PREVU", "ARRIVE"] } },
             include: { compagnie: true, typeAvion: true },
@@ -40,8 +40,9 @@ export async function getAvitaillementFormData() {
         }),
         prisma.equipementStockage.findMany({ where: { typeEquipement: "CAMION", actif: true }, orderBy: { nom: "asc" } }),
         prisma.typeAvion.findMany({ orderBy: { modele: "asc" } }),
+        prisma.compagnieAerienne.findMany({ orderBy: { nom: "asc" } }),
     ]);
-    return { vols, camions, typeAvions };
+    return { vols, camions, typeAvions, compagnies };
 }
 
 export async function createAvitaillement(data: {

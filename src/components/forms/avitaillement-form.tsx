@@ -18,11 +18,12 @@ interface AvitaillementFormProps {
     }[];
     camions: { id: number; nom: string }[];
     typeAvions: { id: number; modele: string; constructeur: string }[];
+    compagnies: { id: number; nom: string }[];
     onSuccess: () => void;
     onCancel: () => void;
 }
 
-export function AvitaillementForm({ vols, camions, typeAvions, onSuccess, onCancel }: AvitaillementFormProps) {
+export function AvitaillementForm({ vols, camions, typeAvions, compagnies, onSuccess, onCancel }: AvitaillementFormProps) {
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [selectedVolId, setSelectedVolId] = React.useState<number | "">("");
@@ -115,13 +116,30 @@ export function AvitaillementForm({ vols, camions, typeAvions, onSuccess, onCanc
                 </div>
                 <div className="col-span-6 space-y-1">
                     <label className={labelClass}>Flight N° & Compagnie</label>
-                    <select
-                        name="programmeVolId" required className={`${inputClass} border-blue-500/30`}
-                        value={selectedVolId} onChange={(e) => setSelectedVolId(e.target.value ? parseInt(e.target.value) : "")}
-                    >
-                        <option value="">Select Flight...</option>
-                        {vols.map(v => <option key={v.id} value={v.id}>{v.numeroVol} — {v.compagnie.nom}</option>)}
-                    </select>
+                    <input
+                        type="text"
+                        placeholder="Search or type flight..."
+                        required
+                        className={`${inputClass} border-blue-500/30`}
+                        list="vols-datalist"
+                        autoComplete="off"
+                        defaultValue={selectedVol ? `${selectedVol.numeroVol} — ${selectedVol.compagnie.nom}` : ""}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            const found = vols.find(v => 
+                                v.numeroVol === val || 
+                                `${v.numeroVol} — ${v.compagnie.nom}` === val
+                            );
+                            if (found) setSelectedVolId(found.id);
+                            else setSelectedVolId("");
+                        }}
+                    />
+                    <datalist id="vols-datalist">
+                        {vols.map(v => (
+                            <option key={v.id} value={`${v.numeroVol} — ${v.compagnie.nom}`} />
+                        ))}
+                    </datalist>
+                    <input type="hidden" name="programmeVolId" value={selectedVolId} />
                 </div>
             </div>
 
@@ -185,7 +203,11 @@ export function AvitaillementForm({ vols, camions, typeAvions, onSuccess, onCanc
                                 onChange={e => setSuppliedTo(e.target.value)}
                                 placeholder="Compagnie"
                                 className={`${editableBox} pl-8 !py-2 font-semibold`}
+                                list="compagnies-list"
                             />
+                            <datalist id="compagnies-list">
+                                {compagnies.map(c => <option key={c.id} value={c.nom} />)}
+                            </datalist>
                         </div>
                     </div>
                 </div>
