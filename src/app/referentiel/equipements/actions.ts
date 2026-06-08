@@ -59,10 +59,57 @@ export async function updateEquipement(id: number, data: {
     seuilAlerte: number;
 }) {
     try {
-        await prisma.equipementStockage.update({
+        // Récupérer l'équipement actuel avec ses mouvements pour recalculer le stock
+        const currentEquipement = await prisma.equipementStockage.findUnique({
             where: { id },
-            data
+            include: { mouvements: true },
         });
+
+        if (!currentEquipement) {
+            return { success: false, error: "Équipement non trouvé" };
+        }
+
+        // Si le stockInitial a changé, il faut créer un mouvement d'ajustement
+        // pour que le stock calculé (stockInitial + mouvements) = nouveau stockInitial
+        if (data.stockInitial !== currentEquipement.stockInitial) {
+            // Calculer le delta actuel des mouvements
+            const stockDelta = currentEquipement.mouvements.reduce((sum: number, m: { typeMouvement: string; quantite: number }) => {
+                if (m.typeMouvement === "RECEPTION" || m.typeMouvement === "TRANSFERT_ENTREE" || m.typeMouvement === "AJUSTEMENT") {
+                    return sum + m.quantite;
+                } else {
+                    return sum - m.quantite;
+                }
+            }, 0);
+
+            // L'ajustement doit annuler le delta existant pour que :
+            // newStockInitial + oldDelta + adjustment = newStockInitial
+            // => adjustment = -oldDelta
+            const adjustmentNeeded = -stockDelta;
+
+            await prisma.$transaction([
+                // 1. Mettre à jour l'équipement
+                prisma.equipementStockage.update({ where: { id }, data }),
+                // 2. Créer le mouvement d'ajustement compensatoire (si nécessaire)
+                ...(adjustmentNeeded !== 0
+                    ? [
+                          prisma.mouvementStock.create({
+                              data: {
+                                  equipementId: id,
+                                  typeMouvement: "AJUSTEMENT",
+                                  quantite: adjustmentNeeded,
+                                  referenceType: "AJUSTEMENT",
+                                  referenceId: id,
+                                  dateMouvement: new Date(),
+                              },
+                          }),
+                      ]
+                    : []),
+            ]);
+        } else {
+            // Pas de changement de stockInitial, mise à jour simple
+            await prisma.equipementStockage.update({ where: { id }, data });
+        }
+
         revalidateAllStockPages();
         return { success: true };
     } catch (error) {
