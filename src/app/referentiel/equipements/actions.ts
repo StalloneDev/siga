@@ -59,7 +59,7 @@ export async function updateEquipement(id: number, data: {
     seuilAlerte: number;
 }) {
     try {
-        // Récupérer l'équipement actuel avec ses mouvements pour recalculer le stock
+        // Récupérer l'équipement actuel avec ses mouvements
         const currentEquipement = await prisma.equipementStockage.findUnique({
             where: { id },
             include: { mouvements: true },
@@ -69,46 +69,43 @@ export async function updateEquipement(id: number, data: {
             return { success: false, error: "Équipement non trouvé" };
         }
 
-        // Si le stockInitial a changé, il faut créer un mouvement d'ajustement
-        // pour que le stock calculé (stockInitial + mouvements) = nouveau stockInitial
-        if (data.stockInitial !== currentEquipement.stockInitial) {
-            // Calculer le delta actuel des mouvements
-            const stockDelta = currentEquipement.mouvements.reduce((sum: number, m: { typeMouvement: string; quantite: number }) => {
-                if (m.typeMouvement === "RECEPTION" || m.typeMouvement === "TRANSFERT_ENTREE" || m.typeMouvement === "AJUSTEMENT") {
-                    return sum + m.quantite;
-                } else {
-                    return sum - m.quantite;
-                }
-            }, 0);
+        // Calculer le delta actuel de TOUS les mouvements existants
+        const stockDelta = currentEquipement.mouvements.reduce((sum: number, m: { typeMouvement: string; quantite: number }) => {
+            if (m.typeMouvement === "RECEPTION" || m.typeMouvement === "TRANSFERT_ENTREE" || m.typeMouvement === "AJUSTEMENT") {
+                return sum + m.quantite;
+            } else {
+                return sum - m.quantite;
+            }
+        }, 0);
 
-            // L'ajustement doit annuler le delta existant pour que :
-            // newStockInitial + oldDelta + adjustment = newStockInitial
-            // => adjustment = -oldDelta
-            const adjustmentNeeded = -stockDelta;
+        // Le stock qui serait calculé APRÈS la mise à jour du stockInitial :
+        //   stockCalcule = newStockInitial + stockDelta
+        // On veut que stockCalcule === newStockInitial
+        // Donc on a besoin d'un ajustement de : -stockDelta
+        const adjustmentNeeded = -stockDelta;
 
-            await prisma.$transaction([
-                // 1. Mettre à jour l'équipement
-                prisma.equipementStockage.update({ where: { id }, data }),
-                // 2. Créer le mouvement d'ajustement compensatoire (si nécessaire)
-                ...(adjustmentNeeded !== 0
-                    ? [
-                          prisma.mouvementStock.create({
-                              data: {
-                                  equipementId: id,
-                                  typeMouvement: "AJUSTEMENT",
-                                  quantite: adjustmentNeeded,
-                                  referenceType: "AJUSTEMENT",
-                                  referenceId: id,
-                                  dateMouvement: new Date(),
-                              },
-                          }),
-                      ]
-                    : []),
-            ]);
-        } else {
-            // Pas de changement de stockInitial, mise à jour simple
-            await prisma.equipementStockage.update({ where: { id }, data });
+        const operations = [
+            // 1. Mettre à jour l'équipement
+            prisma.equipementStockage.update({ where: { id }, data }),
+        ];
+
+        // 2. Créer un mouvement d'ajustement compensatoire si nécessaire
+        if (adjustmentNeeded !== 0) {
+            operations.push(
+                prisma.mouvementStock.create({
+                    data: {
+                        equipementId: id,
+                        typeMouvement: "AJUSTEMENT",
+                        quantite: adjustmentNeeded,
+                        referenceType: "AJUSTEMENT",
+                        referenceId: id,
+                        dateMouvement: new Date(),
+                    },
+                }) as any,
+            );
         }
+
+        await prisma.$transaction(operations);
 
         revalidateAllStockPages();
         return { success: true };
