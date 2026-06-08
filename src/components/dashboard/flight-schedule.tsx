@@ -23,6 +23,7 @@ interface Vol {
     compagnie: { nom: string };
     immatriculation: string;
     typeAvion: { modele: string; capaciteReservoir: number } | null;
+    typeAvionManual?: string | null;
     aeroportArrivee: { codeIata: string };
     aeroportDepart: { codeIata: string };
     avitaillements: { quantiteLivree: number }[];
