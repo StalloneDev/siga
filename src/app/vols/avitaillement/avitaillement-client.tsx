@@ -25,7 +25,7 @@ interface Avitaillement {
         numeroVol: string;
         compagnie: { nom: string };
         immatriculation: string;
-        typeAvion: { modele: string };
+        typeAvion: { modele: string } | null;
         aeroportDepart?: { codeIata: string };
         aeroportArrivee?: { codeIata: string };
     };
@@ -72,7 +72,7 @@ export function AvitaillementClient({
             "N° Vol": a.programmeVol.numeroVol,
             "Compagnie": a.suppliedTo || a.programmeVol.compagnie.nom,
             "Immatriculation": a.immatriculation || a.programmeVol.immatriculation,
-            "Modèle Avion": a.typeAvionManual || a.programmeVol.typeAvion.modele,
+            "Modèle Avion": a.typeAvionManual || a.programmeVol.typeAvion?.modele || "—",
             "Route FR": a.routeFrom || a.programmeVol.aeroportDepart?.codeIata,
             "Route TO": a.routeTo || a.programmeVol.aeroportArrivee?.codeIata,
             "Camion": a.camion.nom,
@@ -153,7 +153,7 @@ export function AvitaillementClient({
                                         <td className="px-5 py-3 font-mono text-sm font-bold text-white">{a.programmeVol.numeroVol}</td>
                                         <td className="px-5 py-3 text-sm text-slate-300">
                                             <div className="font-bold text-blue-400">{a.immatriculation || a.programmeVol.immatriculation}</div>
-                                            <div className="text-[10px] text-slate-500 uppercase">{a.typeAvionManual || a.programmeVol.typeAvion.modele}</div>
+                                            <div className="text-[10px] text-slate-500 uppercase">{a.typeAvionManual || a.programmeVol.typeAvion?.modele || "—"}</div>
                                         </td>
                                         <td className="px-5 py-3 text-sm text-cyan-400">{a.camion.nom}</td>
                                         <td className="px-5 py-3 text-right font-mono text-xs text-slate-400">{Number(a.compteurAvant).toLocaleString()}</td>

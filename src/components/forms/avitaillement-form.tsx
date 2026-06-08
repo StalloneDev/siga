@@ -12,7 +12,7 @@ interface AvitaillementFormProps {
         compagnie: { nom: string };
         immatriculation: string;
         typeAvionId: number;
-        typeAvion: { modele: string; capaciteReservoir: number };
+        typeAvion: { modele: string; capaciteReservoir: number } | null;
         aeroportDepart: { codeIata: string };
         aeroportArrivee: { codeIata: string };
     }[];
@@ -47,7 +47,7 @@ export function AvitaillementForm({ vols, camions, typeAvions, compagnies, onSuc
     React.useEffect(() => {
         if (selectedVol) {
             setImmatriculation(selectedVol.immatriculation);
-            setTypeAvionManual(selectedVol.typeAvion.modele);
+            setTypeAvionManual(selectedVol.typeAvion?.modele ?? "");
             setRouteFrom(selectedVol.aeroportDepart?.codeIata || "");
             setRouteTo(selectedVol.aeroportArrivee?.codeIata || "");
             setSuppliedTo(selectedVol.compagnie.nom);

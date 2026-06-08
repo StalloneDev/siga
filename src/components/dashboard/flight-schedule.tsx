@@ -22,7 +22,7 @@ interface Vol {
     heureDepartPrevue: Date;
     compagnie: { nom: string };
     immatriculation: string;
-    typeAvion: { modele: string; capaciteReservoir: number };
+    typeAvion: { modele: string; capaciteReservoir: number } | null;
     aeroportArrivee: { codeIata: string };
     aeroportDepart: { codeIata: string };
     avitaillements: { quantiteLivree: number }[];
@@ -69,7 +69,7 @@ export function FlightSchedule({ vols }: { vols: Vol[] }) {
                                         </td>
                                         <td className="bg-slate-900/30 group-hover:bg-slate-800/50 py-3 px-3 border-y border-slate-800 transition-colors">
                                             <div className="text-xs text-slate-300">{vol.immatriculation}</div>
-                                            <div className="text-[10px] text-slate-500">{vol.typeAvion.modele}</div>
+                                            <div className="text-[10px] text-slate-500">{vol.typeAvion?.modele ?? vol.typeAvionManual ?? "—"}</div>
                                         </td>
                                         <td className="bg-slate-900/30 group-hover:bg-slate-800/50 py-3 px-3 border-y border-slate-800 transition-colors">
                                             <div className="text-xs text-slate-200 font-mono">{new Date(vol.heureArriveePrevue).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</div>

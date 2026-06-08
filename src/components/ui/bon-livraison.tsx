@@ -20,7 +20,7 @@ interface BonLivraisonProps {
             numeroVol: string;
             compagnie: { nom: string };
             immatriculation: string;
-            typeAvion: { modele: string };
+            typeAvion: { modele: string } | null;
             aeroportDepart?: { codeIata: string };
             aeroportArrivee?: { codeIata: string };
         };
@@ -65,7 +65,7 @@ export const BonLivraison = React.forwardRef<HTMLDivElement, BonLivraisonProps>(
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="text-xs text-slate-500 w-24">Type Appareil</span>
-                            <span className="text-sm">{avitaillement.typeAvionManual || avitaillement.typeAvion?.modele || avitaillement.programmeVol.typeAvion.modele}</span>
+                            <span className="text-sm">{avitaillement.typeAvionManual || avitaillement.typeAvion?.modele || avitaillement.programmeVol.typeAvion?.modele || "—"}</span>
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="text-xs text-slate-500 w-24">Route</span>
