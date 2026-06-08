@@ -7,13 +7,13 @@ interface Props {
     analytics: {
         avgDaily: number;
         autonomieJours: number | null;
-        totalStockBacs: number;
+        totalStockDepot: number;
         maintenanceEnRetard: number;
     }
 }
 
 export function StockPrediction({ analytics }: Props) {
-    const { avgDaily, autonomieJours, totalStockBacs, maintenanceEnRetard } = analytics;
+    const { avgDaily, autonomieJours, totalStockDepot, maintenanceEnRetard } = analytics;
 
     const isLow = autonomieJours !== null && autonomieJours <= 3;
     const isCritical = autonomieJours !== null && autonomieJours <= 1;
@@ -48,10 +48,10 @@ export function StockPrediction({ analytics }: Props) {
                         </div>
                     </div>
                     <div className="space-y-1 text-right">
-                        <p className="text-[9px] font-bold text-slate-500 uppercase">Stock Total BACs</p>
+                        <p className="text-[9px] font-bold text-slate-500 uppercase">Stock Total Dépôt</p>
                         <div className="flex items-center justify-end gap-1.5">
                             <span className="text-sm font-mono font-bold text-slate-200">
-                                {totalStockBacs.toLocaleString()} L
+                                {totalStockDepot.toLocaleString()} L
                             </span>
                         </div>
                     </div>

@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { getStockActuel } from "@/app/logistique/mouvements/actions";
+import { getDailyFuelingKPIs } from "@/app/vols/programme/actions";
 
 export async function getDashboardData() {
     const today = new Date();
@@ -47,6 +48,7 @@ export async function getDashboardData() {
                 }
             }
         } as any).catch(() => 0),
+        getDailyFuelingKPIs().catch(() => ({ totalOpeningStock: 0 } as any)),
     ]);
 
     const stocksActuels = results[0] as any[];
@@ -54,13 +56,14 @@ export async function getDashboardData() {
     const avitaillements30jours = results[2] as any[];
     const consommation7jours = results[3] as any[];
     const maintenanceEnRetard = results[4] as number;
+    const kpis = results[5] as any;
 
     const avgDaily = consommation7jours[0]?.avg_daily || 0;
-    const totalStockBacs = stocksActuels
-        .filter((s: any) => s.typeEquipement === "BAC")
-        .reduce((sum: number, s: any) => sum + s.stockActuel, 0);
+    
+    // On remplace totalStockBacs par le Total Opening Stock
+    const totalStockDepot = kpis?.totalOpeningStock || 0;
 
-    const autonomieJours = avgDaily > 0 ? Math.floor(totalStockBacs / avgDaily) : null;
+    const autonomieJours = avgDaily > 0 ? Math.floor(totalStockDepot / avgDaily) : null;
 
     return {
         stocksActuels,
@@ -69,7 +72,7 @@ export async function getDashboardData() {
         analytics: {
             avgDaily,
             autonomieJours,
-            totalStockBacs,
+            totalStockDepot,
             maintenanceEnRetard
         }
     };
